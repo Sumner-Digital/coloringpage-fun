@@ -60,6 +60,12 @@ app.get('*', (req, res) => {
 
 // --- Start Server ---
 
-app.listen(PORT, () => {
-  console.log(`Server is running and listening on port ${PORT}`);
-});
+// Export the Express app for Vercel serverless function
+module.exports = app;
+
+// Only start the server if running locally (not in Vercel)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server is running and listening on port ${PORT}`);
+  });
+}
