@@ -1,0 +1,7 @@
+{
+  "name": "Monster Animator AI",
+  "description": "Upload a hand-drawn picture of a monster and bring it to life as a fun, animated video using Google's Veo model.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

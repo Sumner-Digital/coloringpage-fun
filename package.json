@@ -1,0 +1,24 @@
+{
+  "name": "monster-animator-ai-server",
+  "version": "1.0.0",
+  "description": "Node.js server for the Monster Animator AI app.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.28.0",
+    "dotenv": "^17.2.3",
+    "express": "^4.19.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.3.5"
+  }
+}
