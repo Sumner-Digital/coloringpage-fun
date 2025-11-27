@@ -8,6 +8,11 @@ export interface GenerateVideoParams {
   setLoadingMessage: (message: string) => void;
 }
 
+export interface GenerateVideoResult {
+  url: string;
+  blob: Blob;
+}
+
 // FIX: Define the AIStudio interface to resolve type conflicts.
 interface AIStudio {
   hasSelectedApiKey: () => Promise<boolean>;

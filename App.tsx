@@ -182,6 +182,77 @@ const LoadingIndicator = ({ message }: LoadingIndicatorProps) => (
   </div>
 );
 
+interface ShareButtonProps {
+  videoUrl: string;
+  videoBlob: Blob;
+}
+
+const ShareButton = ({ videoUrl, videoBlob }: ShareButtonProps) => {
+  const [shareError, setShareError] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    setShareError(null);
+    
+    // Create a File object from the blob for sharing
+    const videoFile = new File([videoBlob], `monster-animation-${Date.now()}.mp4`, {
+      type: 'video/mp4',
+    });
+
+    // Check if Web Share API with file sharing is supported
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [videoFile] })) {
+      try {
+        await navigator.share({
+          files: [videoFile],
+          title: 'My Animated Monster',
+          text: 'Check out my animated monster!',
+        });
+      } catch (err: any) {
+        // User cancelled sharing - not an error
+        if (err.name !== 'AbortError') {
+          console.error('Share failed:', err);
+          setShareError('Sharing failed. Try the download option below.');
+        }
+      }
+    } else {
+      // Fallback: trigger download
+      const link = document.createElement('a');
+      link.href = videoUrl;
+      link.download = `monster-animation-${Date.now()}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  return (
+    <div className="mt-4 w-full">
+      <button
+        onClick={handleShare}
+        className="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 flex items-center justify-center gap-2 text-lg shadow-lg transform hover:scale-105"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+          />
+        </svg>
+        Share Video
+      </button>
+      {shareError && (
+        <p className="text-red-400 text-sm mt-2 text-center">{shareError}</p>
+      )}
+    </div>
+  );
+};
+
 // --- Main App Component ---
 type AppState = 'initializing' | 'key_needed' | 'ready' | 'error';
 
@@ -194,6 +265,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Waking up the monster...');
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
+  const [generatedVideoBlob, setGeneratedVideoBlob] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [appState, setAppState] = useState<AppState>('initializing');
 
@@ -265,16 +337,18 @@ export default function App() {
 
     setError(null);
     setGeneratedVideoUrl(null);
+    setGeneratedVideoBlob(null);
     setIsLoading(true);
 
     try {
-      const videoUrl = await generateVideoFromImage({
+      const result = await generateVideoFromImage({
         prompt,
         imageBase64,
         aspectRatio,
         setLoadingMessage,
       });
-      setGeneratedVideoUrl(videoUrl);
+      setGeneratedVideoUrl(result.url);
+      setGeneratedVideoBlob(result.blob);
     } catch (e: any) {
       console.error('Generation Error:', e);
       if (e.message && e.message.includes('Requested entity was not found.')) {
@@ -368,8 +442,11 @@ export default function App() {
                     <p className="text-sm">{error}</p>
                   </div>
                 )}
-                {generatedVideoUrl ? (
-                  <video src={generatedVideoUrl} controls autoPlay loop className="w-full rounded-lg shadow-2xl" />
+                {generatedVideoUrl && generatedVideoBlob ? (
+                  <>
+                    <video src={generatedVideoUrl} controls autoPlay loop className="w-full rounded-lg shadow-2xl" />
+                    <ShareButton videoUrl={generatedVideoUrl} videoBlob={generatedVideoBlob} />
+                  </>
                 ) : (
                   <div className="text-center text-gray-500">
                     <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>

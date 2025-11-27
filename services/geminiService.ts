@@ -1,6 +1,6 @@
 
 import { GoogleGenAI } from '@google/genai';
-import type { GenerateVideoParams } from '../types';
+import type { GenerateVideoParams, GenerateVideoResult } from '../types';
 
 // --- Best Practice: API Key Management ---
 
@@ -105,7 +105,7 @@ export const generateVideoFromImage = async ({
   imageBase64,
   aspectRatio,
   setLoadingMessage,
-}: GenerateVideoParams): Promise<string> => {
+}: GenerateVideoParams): Promise<GenerateVideoResult> => {
 
   if (!isInitialized) {
       throw new Error("Application is not initialized. Please select an API key if prompted.");
@@ -165,7 +165,10 @@ export const generateVideoFromImage = async ({
     }
 
     const videoBlob = await response.blob();
-    return URL.createObjectURL(videoBlob);
+    return {
+      url: URL.createObjectURL(videoBlob),
+      blob: videoBlob,
+    };
   } catch (error: any) {
     console.error('Error during video generation:', error);
     // Invalidate the cached key only in production environments on permission errors.
